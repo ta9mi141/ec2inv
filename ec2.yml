@@ -27,6 +27,10 @@ Resources:
       KeyName: !Ref YourPrivateKeyName
       SecurityGroupIds:
         - !Ref YourSecurityGroupId
+      Tags:
+        - Key: AnsibleInventoryGroup
+          Value: app
+
   WebServer:
     Type: AWS::EC2::Instance
     Properties:
@@ -40,15 +44,6 @@ Resources:
       KeyName: !Ref YourPrivateKeyName
       SecurityGroupIds:
         - !Ref YourSecurityGroupId
-
-Outputs:
-  PrivateKeyName:
-    Description: This key is required to login as ec2-user.
-    Value: !Ref YourPrivateKeyName
-
-  ApplicationServerPublicIP:
-    Description: This address must be set to ApplicationServer group in Ansible inventory file.
-    Value: !GetAtt [ApplicationServer, PublicIp]
-  WebServerPublicIP:
-    Description: This address must be set to WebServer group in Ansible inventory file.
-    Value: !GetAtt [WebServer, PublicIp]
+      Tags:
+        - Key: AnsibleInventoryGroup
+          Value: web
