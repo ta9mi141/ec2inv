@@ -5,6 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"log"
 	"os"
 )
@@ -25,7 +26,21 @@ func uploadTemplateToS3(templatePath string) (string, error) {
 	}
 	defer template.Close()
 
-	return bucket + key, nil
+	uploader := s3manager.NewUploader(
+		session.New(aws.NewConfig().WithRegion("ap-northeast-1")), nil,
+	)
+	result, err := uploader.Upload(
+		&s3manager.UploadInput{
+			Bucket: aws.String(bucket),
+			Key:    aws.String(key),
+			Body:   template,
+		},
+	)
+	if err != nil {
+		return "", err
+	}
+
+	return result.Location, nil
 }
 
 func createAnsibleTargets(stackName, templateURL *string) error {
