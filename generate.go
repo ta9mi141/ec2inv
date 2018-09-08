@@ -5,6 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"log"
 	"os"
@@ -69,7 +70,14 @@ func createAnsibleTargets(stackName, templateURL *string) error {
 }
 
 func printInventory(stackName string) error {
-	return nil
+	client := ec2.New()
+	filter := &ec2.Filter{}.SetName("tag:aws:cloudformation:stack-name").SetValue(stackName)
+	description, err := client.DescribeInstances(
+		&ec2.DescribeInstancesInput{Filters: []*ec2.Filter{filter}},
+	)
+	if err != nil {
+		return err
+	}
 }
 
 func main() {
