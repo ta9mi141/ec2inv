@@ -10,6 +10,9 @@ When you need Amazon EC2 instances provisioned by Ansible, this tool may help yo
 It creates EC2 instances defined in a template of AWS CloudFormation and
 shows what you should write to your inventory file.
 
+## Requirements
+* Go
+
 ## Author
 [Takumi Ishii](https://github.com/it-akumi)
 
