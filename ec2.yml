@@ -14,7 +14,24 @@ Parameters:
     Default: ami-06cd52961ce9f0d85 # Amazon Linux AMI 2018.03.0 (HVM), SSD Volume Type
 
 Resources:
-  ApplicationServer:
+  PrimaryApplicationServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: ap-northeast-1a
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 50 # GiB
+      ImageId: !Ref YourImageId
+      InstanceType: t2.micro
+      KeyName: !Ref YourPrivateKeyName
+      SecurityGroupIds:
+        - !Ref YourSecurityGroupId
+      Tags:
+        - Key: AnsibleInventoryGroup
+          Value: app
+
+  SecondaryApplicationServer:
     Type: AWS::EC2::Instance
     Properties:
       AvailabilityZone: ap-northeast-1a
