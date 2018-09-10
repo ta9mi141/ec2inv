@@ -89,10 +89,13 @@ func printInventory(stackName string) error {
 	}
 
 	inventoryGroupMembers := make(map[string][]string)
-	fmt.Printf("Before search: %v\n", inventoryGroupMembers)
+	var keyname string
 
 	for _, reservation := range description.Reservations {
 		instance := reservation.Instances[0]
+
+		// Always use same private key among instances defined in same template
+		keyname = *instance.KeyName
 		var groupName string
 		for _, tag := range instance.Tags {
 			if *tag.Key == "AnsibleInventoryGroup" {
@@ -100,7 +103,6 @@ func printInventory(stackName string) error {
 			}
 		}
 		publicIp := *instance.PublicIpAddress
-
 		if _, exists := inventoryGroupMembers[groupName]; exists {
 			inventoryGroupMembers[groupName] = append(inventoryGroupMembers[groupName], publicIp)
 		} else {
@@ -108,13 +110,21 @@ func printInventory(stackName string) error {
 		}
 	}
 
-	fmt.Printf("After search: %v\n", inventoryGroupMembers)
+	for group, members := range inventoryGroupMembers {
+		fmt.Printf("[%s]\n", group)
+		for _, ip := range members {
+			fmt.Printf("%s\n", ip)
+		}
+	}
+	fmt.Printf("[all:vars]\n")
+	fmt.Printf("ansible_ssh_user=ec2-user\n")
+	fmt.Printf("ansible_ssh_private_key_file=~/.ssh/%s.pem\n", keyname)
 	return nil
 }
 
 func main() {
 	const (
-		stackName    = "AnsibleTargets"
+		stackName    = "AnsibleTargets03"
 		templatePath = "./ec2.yml"
 	)
 
