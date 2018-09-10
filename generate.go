@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
@@ -28,7 +29,7 @@ func uploadTemplateToS3(templatePath string) (string, error) {
 	defer template.Close()
 
 	uploader := s3manager.NewUploader(
-		session.New(aws.NewConfig().WithRegion("ap-northeast-1")), nil,
+		session.New(aws.NewConfig().WithRegion("ap-northeast-1"), nil),
 	)
 	result, err := uploader.Upload(
 		&s3manager.UploadInput{
@@ -46,7 +47,7 @@ func uploadTemplateToS3(templatePath string) (string, error) {
 
 func createAnsibleTargets(stackName, templateURL *string) error {
 	client := cloudformation.New(
-		session.New(aws.NewConfig().WithRegion("ap-northeast-1")), nil,
+		session.New(aws.NewConfig().WithRegion("ap-northeast-1"), nil),
 	)
 
 	_, err := client.CreateStack(
@@ -70,14 +71,45 @@ func createAnsibleTargets(stackName, templateURL *string) error {
 }
 
 func printInventory(stackName string) error {
-	client := ec2.New()
-	filter := &ec2.Filter{}.SetName("tag:aws:cloudformation:stack-name").SetValue(stackName)
+	client := ec2.New(
+		session.New(aws.NewConfig().WithRegion("ap-northeast-1"), nil),
+	)
 	description, err := client.DescribeInstances(
-		&ec2.DescribeInstancesInput{Filters: []*ec2.Filter{filter}},
+		&ec2.DescribeInstancesInput{
+			Filters: []*ec2.Filter{
+				{
+					Name:   aws.String("tag:aws:cloudformation:stack-name"),
+					Values: []*string{aws.String(stackName)},
+				},
+			},
+		},
 	)
 	if err != nil {
 		return err
 	}
+
+	inventoryGroupMembers := make(map[string][]string)
+	fmt.Printf("Before search: %v\n", inventoryGroupMembers)
+
+	for _, reservation := range description.Reservations {
+		instance := reservation.Instances[0]
+		var groupName string
+		for _, tag := range instance.Tags {
+			if *tag.Key == "AnsibleInventoryGroup" {
+				groupName = *tag.Value
+			}
+		}
+		publicIp := *instance.PublicIpAddress
+
+		if _, exists := inventoryGroupMembers[groupName]; exists {
+			inventoryGroupMembers[groupName] = append(inventoryGroupMembers[groupName], publicIp)
+		} else {
+			inventoryGroupMembers[groupName] = []string{publicIp}
+		}
+	}
+
+	fmt.Printf("After search: %v\n", inventoryGroupMembers)
+	return nil
 }
 
 func main() {
