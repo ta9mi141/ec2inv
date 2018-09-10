@@ -1,7 +1,7 @@
-EC2-inventory-generator
+ec2inv
 ====
 
-Create EC2 instances as target of Ansible and generate its inventory file
+Generator of inventory file for EC2 instances
 
 ## Description
 
