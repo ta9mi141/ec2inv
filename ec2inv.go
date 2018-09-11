@@ -70,7 +70,9 @@ func createAnsibleTargets(stackName, templateURL *string) error {
 	return nil
 }
 
-func printInventory(stackName string) error {
+type inventoryGroupMembers map[string][]string
+
+func classifyEC2instances(stackName string) (inventoryGroupMembers, string, error) {
 	client := ec2.New(
 		session.New(aws.NewConfig().WithRegion("ap-northeast-1"), nil),
 	)
@@ -85,10 +87,10 @@ func printInventory(stackName string) error {
 		},
 	)
 	if err != nil {
-		return err
+		return nil, "", err
 	}
 
-	inventoryGroupMembers := make(map[string][]string)
+	classifiedInstances := make(inventoryGroupMembers)
 	var keyname string
 
 	for _, reservation := range description.Reservations {
@@ -103,14 +105,18 @@ func printInventory(stackName string) error {
 			}
 		}
 		publicIp := *instance.PublicIpAddress
-		if _, exists := inventoryGroupMembers[groupName]; exists {
-			inventoryGroupMembers[groupName] = append(inventoryGroupMembers[groupName], publicIp)
+		if _, exists := classifiedInstances[groupName]; exists {
+			classifiedInstances[groupName] = append(classifiedInstances[groupName], publicIp)
 		} else {
-			inventoryGroupMembers[groupName] = []string{publicIp}
+			classifiedInstances[groupName] = []string{publicIp}
 		}
 	}
 
-	for group, members := range inventoryGroupMembers {
+	return classifiedInstances, keyname, nil
+}
+
+func printInventory(classifiedInstances inventoryGroupMembers, keyname string) {
+	for group, members := range classifiedInstances {
 		fmt.Printf("[%s]\n", group)
 		for _, ip := range members {
 			fmt.Printf("%s\n", ip)
@@ -119,13 +125,13 @@ func printInventory(stackName string) error {
 	fmt.Printf("[all:vars]\n")
 	fmt.Printf("ansible_ssh_user=ec2-user\n")
 	fmt.Printf("ansible_ssh_private_key_file=~/.ssh/%s.pem\n", keyname)
-	return nil
+	return
 }
 
 func main() {
 	const (
-		stackName    = "AnsibleTargets03"
-		templatePath = "./ec2.yml"
+		stackName    = "AnsibleTargets"
+		templatePath = "./sample.yml"
 	)
 
 	templateURL, err := uploadTemplateToS3(templatePath)
@@ -138,8 +144,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := printInventory(stackName); err != nil {
+	classifiedInstances, keyname, err := classifyEC2instances(stackName)
+	if err != nil {
 		log.Fatal(err)
 	}
+	printInventory(classifiedInstances, keyname)
 	return
 }
