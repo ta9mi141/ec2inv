@@ -1,12 +1,35 @@
-package main
+package command
 
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"log"
+	"github.com/spf13/cobra"
+	"os"
 )
+
+var rootCmd = &cobra.Command{
+	Use:     "ec2inv",
+	Short:   "ec2inv shows Ansible's inventory for EC2 instances",
+	Version: "0.0",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		const stackName = "AnsibleTargets"
+		classifiedInstances, keyname, err := classifyEC2instances(stackName)
+		if err != nil {
+			return err
+		}
+		printInventory(classifiedInstances, keyname)
+		return nil
+	},
+}
+
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
 
 type inventoryGroupMembers map[string][]string
 
@@ -63,16 +86,5 @@ func printInventory(classifiedInstances inventoryGroupMembers, keyname string) {
 	fmt.Printf("[all:vars]\n")
 	fmt.Printf("ansible_ssh_user=ec2-user\n")
 	fmt.Printf("ansible_ssh_private_key_file=~/.ssh/%s.pem\n", keyname)
-	return
-}
-
-func main() {
-	const stackName = "AnsibleTargets"
-
-	classifiedInstances, keyname, err := classifyEC2instances(stackName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	printInventory(classifiedInstances, keyname)
 	return
 }
