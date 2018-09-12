@@ -1,7 +1,7 @@
 ec2inv
 ====
 
-Generator of inventory file for EC2 instances
+Generator of Ansible's inventory for EC2 instances
 
 ## Description
 
