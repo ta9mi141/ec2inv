@@ -13,8 +13,22 @@ shows what you should write to your inventory file.
 ## Requirements
 * Go
 
-## Install
+## Usage
+```
+$ ec2inv --help
+ec2inv shows Ansible's inventory for EC2 instances
 
+Usage:
+  ec2inv [flags]
+
+Flags:
+  -h, --help                             help for ec2inv
+  -i, --inventory-group-tag-key string   Tag key attached to EC2 instances to specify inventory group
+  -s, --stack-name string                Name of a stack which EC2 instances belong to
+      --version                          version for ec2inv
+```
+
+## Install
 ```
 $ go get -u github.com/it-akumi/ec2inv
 ```
