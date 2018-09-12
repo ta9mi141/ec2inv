@@ -20,16 +20,19 @@ func init() {
 		&stackName,
 		"stack-name",
 		"s",
-		"AnsibleTargets",
-		"Stack name which EC2 instances belong to",
+		"",
+		"Name of a stack which EC2 instances belong to",
 	)
 	rootCmd.Flags().StringVarP(
 		&inventoryGroupTagKey,
 		"inventory-group-tag-key",
 		"i",
-		"InventoryGroup",
-		"Tag key used to specify inventory group",
+		"",
+		"Tag key attached to EC2 instances to specify inventory group",
 	)
+
+	rootCmd.MarkFlagRequired("stack-name")
+	rootCmd.MarkFlagRequired("inventory-group-tag-key")
 }
 
 var rootCmd = &cobra.Command{
