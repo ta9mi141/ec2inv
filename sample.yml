@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Create EC2 instances which are target of provisioning by Ansible
+
+Parameters:
+  YourPrivateKeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: your-private-key
+  YourSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+    Default: sg-1234abcd
+  YourImageId:
+    Type: AWS::EC2::Image::Id
+    Default: ami-0123456789abcdefg
+
+Resources:
+  PrimaryApplicationServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: ap-northeast-1a
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 50
+      ImageId: !Ref YourImageId
+      InstanceType: t2.micro
+      KeyName: !Ref YourPrivateKeyName
+      SecurityGroupIds:
+        - !Ref YourSecurityGroupId
+      Tags:
+        # You must attach a tag to specify
+        # which Ansible's inventory group this instance belongs to
+        - Key: InventoryGroup
+          Value: app
+
+  SecondaryApplicationServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: ap-northeast-1a
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 50
+      ImageId: !Ref YourImageId
+      InstanceType: t2.micro
+      KeyName: !Ref YourPrivateKeyName
+      SecurityGroupIds:
+        - !Ref YourSecurityGroupId
+      Tags:
+        # You must attach a tag to specify
+        # which Ansible's inventory group this instance belongs to
+        - Key: InventoryGroup
+          Value: app
+
+  WebServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: ap-northeast-1a
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 20
+      ImageId: !Ref YourImageId
+      InstanceType: t2.micro
+      KeyName: !Ref YourPrivateKeyName
+      SecurityGroupIds:
+        - !Ref YourSecurityGroupId
+      Tags:
+        # You must attach a tag to specify
+        # which Ansible's inventory group this instance belongs to
+        - Key: InventoryGroup
+          Value: web
