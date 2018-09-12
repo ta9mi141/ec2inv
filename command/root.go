@@ -9,12 +9,34 @@ import (
 	"os"
 )
 
+// flags
+var (
+	stackName            string
+	inventoryGroupTagKey string
+)
+
+func init() {
+	rootCmd.Flags().StringVarP(
+		&stackName,
+		"stack-name",
+		"s",
+		"AnsibleTargets",
+		"Stack name which EC2 instances belong to",
+	)
+	rootCmd.Flags().StringVarP(
+		&inventoryGroupTagKey,
+		"inventory-group-tag-key",
+		"i",
+		"InventoryGroup",
+		"Tag key used to specify inventory group",
+	)
+}
+
 var rootCmd = &cobra.Command{
 	Use:     "ec2inv",
 	Short:   "ec2inv shows Ansible's inventory for EC2 instances",
 	Version: "0.0",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		const stackName = "AnsibleTargets"
 		classifiedInstances, keyname, err := classifyEC2instances(stackName)
 		if err != nil {
 			return err
@@ -61,7 +83,7 @@ func classifyEC2instances(stackName string) (inventoryGroupMembers, string, erro
 		keyname = *instance.KeyName
 		var groupName string
 		for _, tag := range instance.Tags {
-			if *tag.Key == "AnsibleInventoryGroup" {
+			if *tag.Key == inventoryGroupTagKey {
 				groupName = *tag.Value
 			}
 		}
