@@ -13,6 +13,12 @@ shows what you should write to your inventory file.
 ## Requirements
 * Go
 
+## Install
+
+```
+$ go get -u github.com/it-akumi/ec2inv
+```
+
 ## Author
 [Takumi Ishii](https://github.com/it-akumi)
 
