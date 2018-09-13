@@ -28,6 +28,13 @@ Flags:
       --version                          version for ec2inv
 ```
 
+As you can see, ec2inv requires stack name and tag key.
+
+This means that EC2 instances to be provisioned must be created by AWS CloudFormation
+and each instance must have additional tag to determine inventory group.
+
+See [sample.yml](https://github.com/it-akumi/ec2inv/blob/master/sample.yml).
+
 ## Install
 ```
 $ go get -u github.com/it-akumi/ec2inv
@@ -37,4 +44,4 @@ $ go get -u github.com/it-akumi/ec2inv
 [Takumi Ishii](https://github.com/it-akumi)
 
 ## License
-[MIT](https://github.com/it-akumi/EC2-inventory-generator/blob/master/LICENSE)
+[MIT](https://github.com/it-akumi/ec2inv/blob/master/LICENSE)
